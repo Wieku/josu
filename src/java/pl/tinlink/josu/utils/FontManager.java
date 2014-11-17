@@ -23,7 +23,6 @@ public enum FontManager{
 	protected static HashMap<FontManager, FontData> fonts = new HashMap<FontManager, FontData>();
 	
 	public static BitmapFont getFont(FontManager val, int size){
-		System.out.println("Font request");
 		BitmapFontData data = fonts.get(val).data, dataCopy = new BitmapFontData();
 		
 		try {

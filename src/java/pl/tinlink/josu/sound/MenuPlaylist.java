@@ -128,7 +128,6 @@ public class MenuPlaylist {
 		if(player != null){
 			
 			detect.detect(player.mix);
-			
 			if(player.position()+500 >= player.length()){
 				nextSong();
 			}
@@ -161,9 +160,10 @@ public class MenuPlaylist {
 			player.close();
 		}
 		current = map;
+		System.out.println(map.getMetaData().getAudioFileName());
 		player = JOsuClient.getClient().minim.loadFile(FileUtils.getFile(map.getMetaData().getAudioFileName()).path(), 2048);
 		detect = new BeatDetect(2048, player.getFormat().getFrameRate());
-		detect.setSensitivity(50);
+		detect.setSensitivity(100);
 	}
 	
 	public static boolean isBeat(){
@@ -179,6 +179,10 @@ public class MenuPlaylist {
 	
 	public static int getLength(){
 		return (player != null ? player.length() : 0);
+	}
+	
+	public static int getCurrentId(){
+		return currentId;
 	}
 	
 	public static void loadAndPlay(int id){

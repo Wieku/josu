@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton.ImageButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -160,6 +161,25 @@ public class GUIHelper{
 
 	public static Label text(String text, Color bg, Color color, int size) {
 		return new Label(text,getLabelStyle(bg, color, size));
+	}
+
+	public static Actor text(String string, Color bg, Color color, int i,int j) {
+		LabelStyle style = getLabelStyle(bg, color, i);
+		style.background.setLeftWidth(j);
+		return new Label(string, style);
+	}
+	
+	public static TextButtonStyle getTextButtonStyle(Color background, Color color, int size, int padLeft){
+		TextButtonStyle stl = new TextButtonStyle();
+		stl.font =  FontManager.getFont(FontManager.MAIN, size);
+		stl.up = getTxRegion(background);
+		stl.up.setLeftWidth(padLeft);
+		stl.over = getTxRegion(background.lerp(Color.WHITE, 0.05f));
+		stl.over.setLeftWidth(padLeft);
+		stl.down = getTxRegion(background.lerp(Color.LIGHT_GRAY, 0.05f));
+		stl.down.setLeftWidth(padLeft);
+		stl.fontColor = color;
+		return stl;
 	}
 	
 }

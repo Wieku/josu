@@ -22,9 +22,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.TextureData;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.BSpline;
+import com.badlogic.gdx.math.Vector;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -46,13 +59,13 @@ public class JOsuClient extends Game{
 	boolean stateChanged;
 	public Minim minim;
 	BeatMap current;
-	
-	Image image = new Image();
+	Pixmap blankCursor;
+	Image cursor;
 	Stage stage;
-	
+	boolean focus;
 	Label fps;
-	
 	AnimationManager manager;
+	
 	Logger logger = new Logger("JOsuClient");
 	public ArrayList<BeatMap> beatmaps;
 	private JOsuClient(){
@@ -63,7 +76,6 @@ public class JOsuClient extends Game{
 	@Override
 	public void create() {
 		minim = new Minim(this);
-		
 		Animation.addAccessor(Actor.class, new ActorAccessor());
 		Animation.addAccessor(Cell.class, new CellAccessor());
 		beatmaps = new ArrayList<BeatMap>();
@@ -93,55 +105,51 @@ public class JOsuClient extends Game{
 			
 			}
 		}
-		
 		fps = GUIHelper.text("", new Color(0,0,0,0.4f), Color.WHITE, 8);
 		MenuPlaylist.start();
 		
-		image.setScaling(Scaling.fit);
-		stage.addActor(image);
 		stage.addActor(fps);
+		
+		cursor = new Image(new Texture(Gdx.files.internal("assets/skin/cursor.png")));
+		stage.addActor(cursor);
+		
+		blankCursor = new Pixmap(4,4,Format.RGBA8888);
+		
 		state = MainMenu.instance;
 		state.onEnter();
 		
-		
-		
 	}
-	
-	public void loadBG(){
-		
-		image.setDrawable(null);
-		BeatMapMetaData data = MenuPlaylist.getCurrent().getMetaData();
-		if(data.getBackgroundName() != null){
-			
-			System.out.println("Loading: " + data.getBackgroundName());
-			
-			FileHandle handle = FileUtils.getFile(data.getBackgroundName());
-			
-			if(handle.exists())
-				image.setDrawable(new TextureRegionDrawable(new TextureRegion(new Texture(handle))));
-
-		}
-		
-	}
-	
-	
+	float delta2 = 0f;
 	private float delta=1;
 	@Override
 	public void render() {
 		
 		MenuPlaylist.update();
 		
-		if((delta+= Gdx.graphics.getDeltaTime())>=1){
+		if((delta2+=Gdx.graphics.getDeltaTime())> 1f/60){
+			int mouseX = Gdx.input.getX();
+			int mouseY = Gdx.input.getY();
 			
-			
-			fps.setText(Gdx.graphics.getFramesPerSecond() + " FPS");
-			fps.pack();
-			if(current == null || !current.getMetaData().getTitle().equals(MenuPlaylist.getCurrent().getMetaData().getTitle()) 
-				|| !current.getMetaData().getArtist().equals(MenuPlaylist.getCurrent().getMetaData().getArtist())){
-				current = MenuPlaylist.getCurrent();
-				loadBG();
+			if(mouseX > 0 && mouseX < Gdx.graphics.getWidth() && mouseY > 0 && mouseY < Gdx.graphics.getHeight()){
+				if(!focus){
+					Gdx.input.setCursorImage(blankCursor, 0, 0);
+					focus = true;
+				}
+			} else {
+				if(focus){
+					Gdx.input.setCursorImage(null, 0, 0);
+					focus = false;
+				}
 			}
 			
+			cursor.setPosition(Math.round(mouseX-(cursor.getWidth()*cursor.getScaleX())/2), Math.round(Gdx.graphics.getHeight()-mouseY-(cursor.getHeight()*cursor.getScaleY())/2));
+			delta2=0;
+		}
+		
+		//System.out.println(Gdx.input.getX() + " " + Gdx.input.getY());
+		if((delta+= Gdx.graphics.getDeltaTime())>=1){
+			fps.setText(Gdx.graphics.getFramesPerSecond() + " FPS");
+			fps.pack();
 			delta=0;
 		}
 		
@@ -150,14 +158,13 @@ public class JOsuClient extends Game{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		
-		super.render();
 		fps.setPosition(Gdx.graphics.getWidth() - fps.getWidth(), 0);
-		
-		stage.act(Gdx.graphics.getDeltaTime());
-		stage.draw();
 		
 		if(state != null)
 			state.render(Gdx.graphics.getDeltaTime());
+		
+		stage.act(Gdx.graphics.getDeltaTime());
+		stage.draw();
 		
 	}
 	
@@ -174,7 +181,6 @@ public class JOsuClient extends Game{
 	public void resize(int width, int height){
 		super.resize(width, height);
 		stage.getViewport().update(width, height, true);
-		image.setBounds(0, 0, width, height);
 		if(state != null)
 			state.resize(width, height);
 		
@@ -182,6 +188,10 @@ public class JOsuClient extends Game{
 	
 	@Override
 	public void dispose() {
+		
+		if(state != null) state.onEscape();
+		
+		
 		super.dispose();
 		System.out.println("dispose");
 		stage.dispose();
