@@ -14,37 +14,21 @@ import pl.tinlink.josu.map.BeatMap;
 import pl.tinlink.josu.map.BeatMapMetaData;
 import pl.tinlink.josu.sound.MenuPlaylist;
 import pl.tinlink.josu.states.MainMenu;
-import pl.tinlink.josu.utils.FileUtils;
 import pl.tinlink.josu.utils.GUIHelper;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.TextureData;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.BSpline;
-import com.badlogic.gdx.math.Vector;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Logger;
-import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import ddf.minim.Minim;
@@ -119,6 +103,7 @@ public class JOsuClient extends Game{
 		state.onEnter();
 		
 	}
+	
 	float delta2 = 0f;
 	private float delta=1;
 	@Override
@@ -143,10 +128,10 @@ public class JOsuClient extends Game{
 			}
 			
 			cursor.setPosition(Math.round(mouseX-(cursor.getWidth()*cursor.getScaleX())/2), Math.round(Gdx.graphics.getHeight()-mouseY-(cursor.getHeight()*cursor.getScaleY())/2));
+			
 			delta2=0;
 		}
 		
-		//System.out.println(Gdx.input.getX() + " " + Gdx.input.getY());
 		if((delta+= Gdx.graphics.getDeltaTime())>=1){
 			fps.setText(Gdx.graphics.getFramesPerSecond() + " FPS");
 			fps.pack();

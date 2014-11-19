@@ -68,8 +68,8 @@ public class BeatMap {
 								case "AudioFilename":
 									
 									//OGG's are not supported for now
-									String[] tok = tokens[1].split(".");
-									if(tok[tok.length-1].contains("ogg")){
+									String[] tok = tokens[1].split("\\.");
+									if(tok[tok.length-1].equals("ogg")){
 										return null;
 									}
 									data.setAudioFileName(file.getParent() + File.separator + tokens[1]);

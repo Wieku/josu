@@ -52,7 +52,7 @@ public class MenuPlaylist {
 		volume = vol;
 		
 		if(player != null){
-			player.setGain(-60 * (60 * volume));
+			player.setGain(-60 + (60 * volume));
 		}
 		
 	}
