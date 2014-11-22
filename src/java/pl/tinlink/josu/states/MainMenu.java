@@ -10,8 +10,8 @@ import pl.tinlink.josu.animation.accessors.ActorAccessor;
 import pl.tinlink.josu.animation.timeline.Timeline;
 import pl.tinlink.josu.api.State;
 import pl.tinlink.josu.map.BeatMapMetaData;
+import pl.tinlink.josu.resources.FileUtils;
 import pl.tinlink.josu.sound.MenuPlaylist;
-import pl.tinlink.josu.utils.FileUtils;
 import pl.tinlink.josu.utils.GUIHelper;
 
 import com.badlogic.gdx.Gdx;
@@ -215,6 +215,8 @@ public class MainMenu implements State {
 	@Override
 	public void render(float delta) {
 		
+		MenuPlaylist.update();
+		
 		stack.setPosition((Gdx.graphics.getWidth() - stack.getWidth()-table.getWidth())/2, (Gdx.graphics.getHeight()-0.7f * Gdx.graphics.getHeight())/2);
 		table.setX(stack.getX()+stack.getWidth()*0.80f);
 		
@@ -260,7 +262,7 @@ public class MainMenu implements State {
 			if(tim != null && !tim.hasEnded()) tim.kill();
 			
 			tim = new Timeline().beginSequence().push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.03f*(0.95f/image.getScaleX()), 0.95f, 0))
-					.push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.1f, 1f, 0)).end();
+					.push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.2f, 1f, 0)).end();
 			tim.start(JOsuClient.getClient().getAnimationManager());
 				
 		}
@@ -295,7 +297,8 @@ public class MainMenu implements State {
 	public void onEnter() {
 		delay = 5;
 		Gdx.input.setInputProcessor(stage);
-		ActorAccessor.createSineTween(stage.getRoot(), ActorAccessor.FADE, 0.5f, 1.0f, 0).start(JOsuClient.getClient().getAnimationManager());
+		ActorAccessor.createSineTween(stage.getRoot(), ActorAccessor.FADE, 2.f, 1.0f, 2).start(JOsuClient.getClient().getAnimationManager());
+		MenuPlaylist.start();
 	}
 
 	public void showInfo(){

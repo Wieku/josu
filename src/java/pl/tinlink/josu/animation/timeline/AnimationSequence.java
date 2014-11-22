@@ -106,5 +106,11 @@ public class AnimationSequence implements AnimationBase<AnimationSequence> {
 	public Timeline end(){
 		return timeline.push(this);
 	}
+
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

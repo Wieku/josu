@@ -1,16 +1,15 @@
 package pl.tinlink.josu.sound;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import pl.tinlink.josu.JOsuClient;
 import pl.tinlink.josu.map.BeatMap;
 import pl.tinlink.josu.map.BeatMapMetaData;
-import pl.tinlink.josu.utils.FileUtils;
+import pl.tinlink.josu.resources.FileUtils;
 
 import com.badlogic.gdx.math.MathUtils;
 
-import ddf.minim.AudioPlayer;
-import ddf.minim.analysis.BeatDetect;
 
 public class MenuPlaylist {
 	
@@ -18,9 +17,9 @@ public class MenuPlaylist {
 	
 	static int currentId = -1;
 	static BeatMap current;
-	static float volume = 0.5f;
+	static float volume = 0.1f;
 	static AudioPlayer player;
-	static BeatDetect detect;
+	//static BeatDetect detect;
 	
 	public static void previousSong(){
 		loadAndPlay(currentId>0?currentId-=1:0);
@@ -52,7 +51,7 @@ public class MenuPlaylist {
 		volume = vol;
 		
 		if(player != null){
-			player.setGain(-60 + (60 * volume));
+			player.setVolume(volume);
 		}
 		
 	}
@@ -60,7 +59,7 @@ public class MenuPlaylist {
 	
 	public static void setPosition(int milis){
 		if(player != null){
-			player.cue(milis);
+			player.setPosition(milis);
 		}
 	}
 	
@@ -123,12 +122,15 @@ public class MenuPlaylist {
 		
 	}
 	
+	public static AudioPlayer getCurrentPlayer(){
+		return player;
+	}
 	
 	public static void update(){
 		if(player != null){
 			
-			detect.detect(player.mix);
-			if(player.position()+500 >= player.length()){
+			//detect.detect(player.mix);
+			if(player.hasEnded()){
 				nextSong();
 			}
 			
@@ -137,7 +139,8 @@ public class MenuPlaylist {
 	
 	public static void play(){
 		if(player != null){
-			player.setGain(-60 + (60*volume));
+			player.setVolume(volume);
+			player.setSpeed(-1f);
 			player.play();
 		}
 	}
@@ -161,24 +164,26 @@ public class MenuPlaylist {
 		}
 		current = map;
 		System.out.println(map.getMetaData().getAudioFileName());
-		player = JOsuClient.getClient().minim.loadFile(FileUtils.getFile(map.getMetaData().getAudioFileName()).path(), 2048);
-		detect = new BeatDetect(2048, player.getFormat().getFrameRate());
-		detect.setSensitivity(100);
+		try {
+			player = new AudioPlayer(FileUtils.getFile(map.getMetaData().getAudioFileName()).file());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static boolean isBeat(){
-		if(detect != null){
-			return detect.isKick() || detect.isSnare() || detect.isHat();
+		if(player != null){
+			return player.isBeat();
 		}
 		return false;
 	}
 	
 	public static int getPosition(){
-		return (player != null ? player.position() : 0);
+		return (player != null ? player.getPosition() : 0);
 	}
 	
 	public static int getLength(){
-		return (player != null ? player.length() : 0);
+		return (player != null ? player.getLength() : 0);
 	}
 	
 	public static int getCurrentId(){

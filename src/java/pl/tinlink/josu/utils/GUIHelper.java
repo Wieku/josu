@@ -1,5 +1,7 @@
 package pl.tinlink.josu.utils;
 
+import pl.tinlink.josu.resources.FontManager;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;

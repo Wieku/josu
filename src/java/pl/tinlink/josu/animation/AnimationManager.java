@@ -23,7 +23,7 @@ public class AnimationManager {
 						tween.getCallback().onEvent(tween);
 					}
 				}
-				
+				tween.dispose();
 				tweens.remove(tween);
 				--i;
 			} else {

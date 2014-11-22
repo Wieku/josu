@@ -12,5 +12,6 @@ public interface AnimationBase<T> {
 	public AnimationCallback getCallback();
 	public T setCallback(AnimationCallback callback);
 	public void kill();
+	public void dispose();
 	
 }

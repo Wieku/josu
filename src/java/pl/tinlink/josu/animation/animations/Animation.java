@@ -1,6 +1,8 @@
 package pl.tinlink.josu.animation.animations;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 import pl.tinlink.josu.animation.AnimationEquations;
@@ -14,6 +16,26 @@ import com.google.common.base.Preconditions;
 
 
 public class Animation implements AnimationBase<Animation>{
+	
+	private static class AnimationPool{
+		
+		static LinkedList<Animation> pool = new LinkedList<Animation>();
+		
+		public static Animation getObjectPool(Object element, int type, float duration){
+			
+				
+			Preconditions.checkNotNull(element, "Element cannot be null!");
+			//this.element = element;
+			//this.duration = duration;
+			//this.type = type;
+			//accessor = (AnimationAccessor<Object>) findAccessor(element);
+			
+			return null;
+		}
+		
+		
+	}
+	
 	
 	AnimationCallback callBack = null;
 	
@@ -256,7 +278,15 @@ public class Animation implements AnimationBase<Animation>{
 			finished = true;
 			ended = true;
 		}
+	}
+	
+	
+	
+	@Override
+	public void dispose() {
+		
 		
 	}
+	
 	
 }

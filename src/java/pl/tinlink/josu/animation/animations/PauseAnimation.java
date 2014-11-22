@@ -70,6 +70,12 @@ public class PauseAnimation implements AnimationBase<PauseAnimation> {
 		
 	}
 
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 	
 	

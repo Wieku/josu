@@ -1,7 +1,5 @@
 package pl.tinlink.josu;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.util.ArrayList;
 
@@ -11,9 +9,7 @@ import pl.tinlink.josu.animation.accessors.CellAccessor;
 import pl.tinlink.josu.animation.animations.Animation;
 import pl.tinlink.josu.api.State;
 import pl.tinlink.josu.map.BeatMap;
-import pl.tinlink.josu.map.BeatMapMetaData;
-import pl.tinlink.josu.sound.MenuPlaylist;
-import pl.tinlink.josu.states.MainMenu;
+import pl.tinlink.josu.states.Splash;
 import pl.tinlink.josu.utils.GUIHelper;
 
 import com.badlogic.gdx.Game;
@@ -31,8 +27,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import ddf.minim.Minim;
-
 public class JOsuClient extends Game{
 
 	boolean ne;
@@ -40,8 +34,9 @@ public class JOsuClient extends Game{
 	long size =0;
 	private static JOsuClient client = new JOsuClient();
 	State state;
+	State tempState;
 	boolean stateChanged;
-	public Minim minim;
+	//public Minim minim;
 	BeatMap current;
 	Pixmap blankCursor;
 	Image cursor;
@@ -59,38 +54,13 @@ public class JOsuClient extends Game{
 	
 	@Override
 	public void create() {
-		minim = new Minim(this);
+		//minim = new Minim(this);
 		Animation.addAccessor(Actor.class, new ActorAccessor());
 		Animation.addAccessor(Cell.class, new CellAccessor());
 		beatmaps = new ArrayList<BeatMap>();
 		stage = new Stage(new ScreenViewport());
 		
-		for(File folder : new File("/home/wiek/PlayOnLinux's virtual drives/osu_on_linux/drive_c/Program Files/osu!/Songs/").listFiles()){
-			
-			if(folder.isDirectory()){
-				File[] files = folder.listFiles(new FilenameFilter() {
-						@Override
-						public boolean accept(File dir, String name) {
-							return name.toLowerCase().endsWith(".osu");
-						}	
-					});
-			
-				for(File file : files){
-					BeatMap map = BeatMap.parseBeatmap(file);
-					if(map != null){
-						beatmaps.add(map);
-						
-						BeatMapMetaData data = map.getMetaData();
-						
-						System.out.println("Successfully parsed beatmap: " + data.getArtist() + " - " + data.getTitle() + " [" +data.getVersion()+ "]");
-						
-					}
-				}
-			
-			}
-		}
 		fps = GUIHelper.text("", new Color(0,0,0,0.4f), Color.WHITE, 8);
-		MenuPlaylist.start();
 		
 		stage.addActor(fps);
 		
@@ -99,7 +69,7 @@ public class JOsuClient extends Game{
 		
 		blankCursor = new Pixmap(4,4,Format.RGBA8888);
 		
-		state = MainMenu.instance;
+		state = Splash.instance;
 		state.onEnter();
 		
 	}
@@ -109,7 +79,12 @@ public class JOsuClient extends Game{
 	@Override
 	public void render() {
 		
-		MenuPlaylist.update();
+		if(stateChanged){
+			state = tempState;
+			state.onEnter();
+			state.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			stateChanged = false;
+		}
 		
 		if((delta2+=Gdx.graphics.getDeltaTime())> 1f/60){
 			int mouseX = Gdx.input.getX();
@@ -184,17 +159,14 @@ public class JOsuClient extends Game{
 	}
 
 	public void changeState(State newState){
-		
-		new Thread(()->{
-			if(state != null)
-				synchronized(state){
-					state.onEscape();
-				}
-			
-			state = newState;
-			state.onEnter();
-		}).start();
-		
+			if(state != null){
+				state.onEscape();
+				tempState = newState;
+			}
+	}
+	
+	public void completeChange(){
+		stateChanged = true;
 	}
 	
 	public InputStream createInput(String file){

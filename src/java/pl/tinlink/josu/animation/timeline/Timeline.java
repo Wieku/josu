@@ -124,5 +124,11 @@ public class Timeline implements AnimationBase<Timeline> {
 	public AnimationParallel beginParallel(){
 		return new AnimationParallel(this);
 	}
+
+	@Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }
