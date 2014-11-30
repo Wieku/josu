@@ -28,8 +28,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import ddf.minim.Minim;
-
 public class JOsuClient extends Game{
 
 	boolean ne;
@@ -39,7 +37,6 @@ public class JOsuClient extends Game{
 	State state;
 	State tempState;
 	boolean stateChanged;
-	public Minim minim;
 	BeatMap current;
 	Pixmap blankCursor;
 	Stage stage;
@@ -58,7 +55,6 @@ public class JOsuClient extends Game{
 	
 	@Override
 	public void create() {
-		minim = new Minim(this);
 		Animation.addAccessor(Actor.class, new ActorAccessor());
 		Animation.addAccessor(Sprite.class, new SpriteAccessor());
 		Animation.addAccessor(Cell.class, new CellAccessor());
