@@ -125,6 +125,11 @@ public class Animation implements AnimationBase<Animation>{
 	 * Returns Callback for animation (default null)
 	 * @return {@link AnimationCallback}
 	 */
+	
+	public Object getObject(){
+		return element;
+	}
+	
 	@Override
 	public AnimationCallback getCallback(){
 		return callBack;

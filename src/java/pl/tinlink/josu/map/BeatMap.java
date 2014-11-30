@@ -66,6 +66,7 @@ public class BeatMap {
 						try {
 							switch (tokens[0]) {
 								case "AudioFilename":
+									//OGG work but needs dynamic loading
 									data.setAudioFileName(file.getParent() + File.separator + tokens[1]);
 									break;
 								case "AudioLeadIn":

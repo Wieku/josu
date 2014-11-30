@@ -17,7 +17,7 @@ public class MenuPlaylist {
 	
 	static int currentId = -1;
 	static BeatMap current;
-	static float volume = 0.1f;
+	static float volume = 0f;
 	static AudioPlayer player;
 	//static BeatDetect detect;
 	
@@ -29,6 +29,7 @@ public class MenuPlaylist {
 		if(JOsuClient.getClient().beatmaps.size()>0){
 			nextSong();
 			skipToPreview();
+			player.glideVolume(volume = 0.1f, 2000);
 		}
 	}
 	
@@ -42,7 +43,6 @@ public class MenuPlaylist {
 			} while(isInPrevious((maps.size()<10?maps.size():10), currentId, map) != -1);
 			playlist.add(map);
 		}
-		
 		loadAndPlay(++currentId);
 	}
 	
@@ -140,7 +140,6 @@ public class MenuPlaylist {
 	public static void play(){
 		if(player != null){
 			player.setVolume(volume);
-			player.setSpeed(-1f);
 			player.play();
 		}
 	}
@@ -169,13 +168,6 @@ public class MenuPlaylist {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static boolean isBeat(){
-		if(player != null){
-			return player.isBeat();
-		}
-		return false;
 	}
 	
 	public static int getPosition(){

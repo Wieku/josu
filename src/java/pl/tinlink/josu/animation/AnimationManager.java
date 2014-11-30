@@ -17,18 +17,19 @@ public class AnimationManager {
 		
 		for(int i=0;i<tweens.size();i++){
 			AnimationBase<?> tween = tweens.get(i);
-			if(tween.isFinished()){
-				if(tween.hasEnded()){
-					if(tween.getCallback() != null){
-						tween.getCallback().onEvent(tween);
+			if(tween != null)
+				if(tween.isFinished()){
+					if(tween.hasEnded()){
+						if(tween.getCallback() != null){
+							tween.getCallback().onEvent(tween);
+						}
 					}
+					tween.dispose();
+					tweens.remove(tween);
+					--i;
+				} else {
+					tween.update(delta);
 				}
-				tween.dispose();
-				tweens.remove(tween);
-				--i;
-			} else {
-				tween.update(delta);
-			}
 		}
 	}
 	

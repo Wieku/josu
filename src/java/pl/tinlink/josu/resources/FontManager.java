@@ -71,7 +71,7 @@ public enum FontManager{
 				FreeTypeFontParameter pam = new FreeTypeFontParameter();
 				pam.size = 64;
 				pam.genMipMaps = true;
-				pam.magFilter = TextureFilter.Nearest;
+				pam.magFilter = TextureFilter.MipMapLinearNearest;
 				pam.minFilter = TextureFilter.MipMapLinearLinear;
 				pam.characters = chars;
 				

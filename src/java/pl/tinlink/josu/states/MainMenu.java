@@ -11,6 +11,7 @@ import pl.tinlink.josu.animation.timeline.Timeline;
 import pl.tinlink.josu.api.State;
 import pl.tinlink.josu.map.BeatMapMetaData;
 import pl.tinlink.josu.resources.FileUtils;
+import pl.tinlink.josu.sound.BeatListener;
 import pl.tinlink.josu.sound.MenuPlaylist;
 import pl.tinlink.josu.utils.GUIHelper;
 
@@ -20,6 +21,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -30,21 +32,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class MainMenu implements State {
+public class MainMenu implements State, BeatListener {
 
 	public static MainMenu instance = new MainMenu();
 	
 	private Stage stage;
 	private Image image;
-	Table table;
-	Stack stack;
+	private Image background;
+	private Table table;
+	private Stack stack;
 	private Table audioControl;
 	private Label statistics;
 	private Label song;
@@ -58,11 +60,10 @@ public class MainMenu implements State {
 	private DateFormat format1 = new SimpleDateFormat("HH:mm:ss");
 	private float menuDelay = -1;
 	private float menuWidth;
-	Image background;
-	ImageButton[] i;
-	int currentId = -1;
-	
+	private ImageButton[] i;
+	private int currentId = -1;
 	private ImageButton image2;
+	private Timeline tim2;
 	
 	private MainMenu(){
 		stage = new Stage(new ScreenViewport());
@@ -70,7 +71,7 @@ public class MainMenu implements State {
 		format1.setTimeZone(TimeZone.getTimeZone("GMT+0"));
 		format.setTimeZone(TimeZone.getDefault());
 		
-		audioControl = GUIHelper.getTable(new Color(0,0,0,0.2f));
+		audioControl = /*GUIHelper.getTable(new Color(0,0,0,0.2f));*/new Table();
 		
 		i = new ImageButton[6];
 		
@@ -81,7 +82,7 @@ public class MainMenu implements State {
 		audioControl.add(i[4] = new ImageButton(GUIHelper.getImageButtonStyle(new Texture(Gdx.files.internal("assets/forwardr.png"))))).size(32, 32);
 		audioControl.add(i[5] = new ImageButton(GUIHelper.getImageButtonStyle(new Texture(Gdx.files.internal("assets/extend.png"))))).size(32, 32).row();
 		
-		position = new Slider(0, 1, 1, false, GUIHelper.getProgressSliderStyle( new Color(0.5f,0.5f,0.5f,0.7f), Color.WHITE, 6));
+		position = new Slider(0, 1, 1, false, GUIHelper.getProgressSliderStyle(new Color(0.5f, 0.5f, 0.5f, 0.5f), new Color(1f, 1f, 1f, 0.9f), 6));
 		
 		position.addListener(new InputListener() {
 			public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -103,7 +104,7 @@ public class MainMenu implements State {
 			}
 		});
 		
-		audioControl.add(position).colspan(6);
+		audioControl.add(position).colspan(6).fillX();
 		
 		ClickListener lis = new ClickListener(Buttons.LEFT){
 			
@@ -144,9 +145,12 @@ public class MainMenu implements State {
 		image2.addListener(new ClickListener(Buttons.LEFT){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				menuDelay = 10;
-				new Timeline().beginParallel().push(ActorAccessor.createSineTween(table, ActorAccessor.SIZEX, 0.5f, menuWidth, 0f))
-				.push(ActorAccessor.createSineTween(table, ActorAccessor.FADE, 0.3f, 1.0f, 0.f)).end().start(JOsuClient.getClient().getAnimationManager());
+				if(new Vector2(x,y).dst(image2.getX()+image2.getWidth()/2, image2.getY()+image2.getHeight()/2) <= image2.getWidth()/2){
+					menuDelay = 10;
+					new Timeline().beginParallel().push(ActorAccessor.createSineTween(table, ActorAccessor.SIZEX, 0.5f, menuWidth, 0f))
+					.push(ActorAccessor.createSineTween(table, ActorAccessor.FADE, 0.3f, 1.0f, 0.f)).end().start(JOsuClient.getClient().getAnimationManager());
+					statistics.setVisible(true);
+				}
 			}
 		});
 		
@@ -159,17 +163,17 @@ public class MainMenu implements State {
 		
 		stage.addActor(song = GUIHelper.text("", new Color(0,0,0,0.2f), Color.WHITE, 12));
 		stage.addActor(statistics = GUIHelper.text("", new Color(0,0,0,0.2f), Color.WHITE, 12));
-		
+		statistics.setVisible(false);
 		stack = new Stack();
 		stack.add(image);
 		stack.add(image2);
 		
 		table = new Table();
 		
-		table.add(new TextButton("Play Solo!", GUIHelper.getTextButtonStyle(new Color(.2f,.2f,.5f,1f), Color.WHITE, 24, 100))).pad(10).padLeft(0).fillX().expandX().row();
-		table.add(new TextButton("Play Multi!", GUIHelper.getTextButtonStyle(new Color(.2f,.2f,.5f,1f), Color.WHITE, 24, 100))).pad(10).fillX().spaceRight(20).row();
-		table.add(new TextButton("Options", GUIHelper.getTextButtonStyle(new Color(.2f,.2f,.5f,1f), Color.WHITE, 24, 100))).pad(10).fillX().row();
-		table.add(new TextButton("Exit!",GUIHelper.getTextButtonStyle(new Color(.2f,.2f,.5f,1f), Color.WHITE, 24, 100))).pad(10).padLeft(0).fillX();
+		table.add(new ImageButton(GUIHelper.getImageButtonStyle(new Texture(Gdx.files.internal("assets/buttonPlaySolo.png"))))).pad(10).width(400).height(75).padLeft(0).fillX().expandX().row();
+		table.add(new ImageButton(GUIHelper.getImageButtonStyle(new Texture(Gdx.files.internal("assets/buttonOptions.png"))))).pad(10).width(400).height(75).padLeft(20).fillX().row();
+		table.add(new ImageButton(GUIHelper.getImageButtonStyle(new Texture(Gdx.files.internal("assets/buttonExit.png"))))).pad(10).width(400).height(75).padLeft(0).fillX();
+		
 		table.pack();
 		
 		menuWidth = table.getWidth();
@@ -221,6 +225,7 @@ public class MainMenu implements State {
 		table.setX(stack.getX()+stack.getWidth()*0.80f);
 		
 		if(menuDelay > -1 && (menuDelay-=delta) <= 0.0f){
+			statistics.setVisible(false);
 			new Timeline().beginParallel().push(ActorAccessor.createSineTween(table, ActorAccessor.SIZEX, 0.5f, 0, 0f))
 			.push(ActorAccessor.createSineTween(table, ActorAccessor.FADE, 0.3f, 0.0f, 0.f)).end().start(JOsuClient.getClient().getAnimationManager());
 			menuDelay= -1;
@@ -251,20 +256,11 @@ public class MainMenu implements State {
 			
 			if(currentId != MenuPlaylist.getCurrentId()){
 				currentId = MenuPlaylist.getCurrentId();
+				MenuPlaylist.getCurrentPlayer().setBeatListener(this);
 				loadBG();
 			}
 			
 			dl=0;
-		}
-		
-		if(MenuPlaylist.isBeat()){
-			//System.out.println("beat");
-			if(tim != null && !tim.hasEnded()) tim.kill();
-			
-			tim = new Timeline().beginSequence().push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.03f*(0.95f/image.getScaleX()), 0.95f, 0))
-					.push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.2f, 1f, 0)).end();
-			tim.start(JOsuClient.getClient().getAnimationManager());
-				
 		}
 			
 		statistics.setPosition(0, Gdx.graphics.getHeight()-statistics.getHeight());
@@ -283,7 +279,7 @@ public class MainMenu implements State {
 		} else {
 			song.setPosition(width-song.getWidth(), height);
 		}
-		audioControl.setPosition(width-audioControl.getWidth(), song.getY()-audioControl.getHeight());
+		audioControl.setPosition(width-audioControl.getWidth()-10, song.getY()-audioControl.getHeight());
 
 		background.setSize(width, height);
 		
@@ -332,5 +328,24 @@ public class MainMenu implements State {
 		
 	}
 	
+	@Override
+	public void onBeatLow() {
+		if(tim2 != null && !tim2.hasEnded()) tim2.kill();
+		
+		tim2 = new Timeline().beginSequence().push(ActorAccessor.createSineTween(image2.getImage(), ActorAccessor.SIZEC, 0.1f*(1.025f/image.getScaleX()), 1.025f, 0))
+				.push(ActorAccessor.createSineTween(image2.getImage(), ActorAccessor.SIZEC, 0.3f, 1f, 0)).end();
+		tim2.start(JOsuClient.getClient().getAnimationManager());
+		
+	}
+	
+	@Override
+	public void onBeatHigh() {
+		if(tim != null && !tim.hasEnded()) tim.kill();
+		
+		tim = new Timeline().beginSequence().push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.04f*(0.96f/image.getScaleX()), 0.96f, 0))
+				.push(ActorAccessor.createSineTween(image, ActorAccessor.SIZEC, 0.3f, 1f, 0)).end();
+		tim.start(JOsuClient.getClient().getAnimationManager());
+		
+	}
 	
 }

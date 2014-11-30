@@ -17,7 +17,7 @@ public class Launcher {
 		cfg.resizable = false;
 		cfg.vSyncEnabled = false;
 		cfg.useGL30 = false;
-		cfg.foregroundFPS = 0;
+		cfg.foregroundFPS = 120;
 	
 		new LwjglApplication(JOsuClient.getClient(), cfg);
 	}

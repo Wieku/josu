@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import pl.tinlink.josu.animation.AnimationManager;
 import pl.tinlink.josu.animation.accessors.ActorAccessor;
 import pl.tinlink.josu.animation.accessors.CellAccessor;
+import pl.tinlink.josu.animation.accessors.SpriteAccessor;
 import pl.tinlink.josu.animation.animations.Animation;
 import pl.tinlink.josu.api.State;
 import pl.tinlink.josu.map.BeatMap;
 import pl.tinlink.josu.states.Splash;
+import pl.tinlink.josu.utils.CursorRenderer;
 import pl.tinlink.josu.utils.GUIHelper;
 
 import com.badlogic.gdx.Game;
@@ -17,15 +19,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+
+import ddf.minim.Minim;
 
 public class JOsuClient extends Game{
 
@@ -36,14 +39,15 @@ public class JOsuClient extends Game{
 	State state;
 	State tempState;
 	boolean stateChanged;
-	//public Minim minim;
+	public Minim minim;
 	BeatMap current;
 	Pixmap blankCursor;
-	Image cursor;
 	Stage stage;
 	boolean focus;
 	Label fps;
 	AnimationManager manager;
+	
+	CursorRenderer cursor;
 	
 	Logger logger = new Logger("JOsuClient");
 	public ArrayList<BeatMap> beatmaps;
@@ -54,8 +58,9 @@ public class JOsuClient extends Game{
 	
 	@Override
 	public void create() {
-		//minim = new Minim(this);
+		minim = new Minim(this);
 		Animation.addAccessor(Actor.class, new ActorAccessor());
+		Animation.addAccessor(Sprite.class, new SpriteAccessor());
 		Animation.addAccessor(Cell.class, new CellAccessor());
 		beatmaps = new ArrayList<BeatMap>();
 		stage = new Stage(new ScreenViewport());
@@ -64,17 +69,13 @@ public class JOsuClient extends Game{
 		
 		stage.addActor(fps);
 		
-		cursor = new Image(new Texture(Gdx.files.internal("assets/skin/cursor.png")));
-		stage.addActor(cursor);
-		
-		blankCursor = new Pixmap(4,4,Format.RGBA8888);
+		cursor = new CursorRenderer();
 		
 		state = Splash.instance;
 		state.onEnter();
 		
 	}
 	
-	float delta2 = 0f;
 	private float delta=1;
 	@Override
 	public void render() {
@@ -84,27 +85,6 @@ public class JOsuClient extends Game{
 			state.onEnter();
 			state.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 			stateChanged = false;
-		}
-		
-		if((delta2+=Gdx.graphics.getDeltaTime())> 1f/60){
-			int mouseX = Gdx.input.getX();
-			int mouseY = Gdx.input.getY();
-			
-			if(mouseX > 0 && mouseX < Gdx.graphics.getWidth() && mouseY > 0 && mouseY < Gdx.graphics.getHeight()){
-				if(!focus){
-					Gdx.input.setCursorImage(blankCursor, 0, 0);
-					focus = true;
-				}
-			} else {
-				if(focus){
-					Gdx.input.setCursorImage(null, 0, 0);
-					focus = false;
-				}
-			}
-			
-			cursor.setPosition(Math.round(mouseX-(cursor.getWidth()*cursor.getScaleX())/2), Math.round(Gdx.graphics.getHeight()-mouseY-(cursor.getHeight()*cursor.getScaleY())/2));
-			
-			delta2=0;
 		}
 		
 		if((delta+= Gdx.graphics.getDeltaTime())>=1){
@@ -125,6 +105,8 @@ public class JOsuClient extends Game{
 		
 		stage.act(Gdx.graphics.getDeltaTime());
 		stage.draw();
+		
+		cursor.updateDraw((SpriteBatch) stage.getBatch(), Gdx.graphics.getDeltaTime());
 		
 	}
 	

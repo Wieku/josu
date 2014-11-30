@@ -67,7 +67,7 @@ public class Splash implements State{
 		starsImage.setScaling(Scaling.fill);
 		stage.addActor(starsImage);
 		
-		loadTable.add(new Label("JOsu!", GUIHelper.getLabelStyle(Color.WHITE, 48))).expand().top().padTop(100).row();
+		loadTable.add(new Label("JOsu!", GUIHelper.getLabelStyle(Color.WHITE, 120))).expand().top().padTop(100).row();
 		loadTable.add(status = new Label("Parsing...", GUIHelper.getLabelStyle(Color.WHITE, 10))).left().padLeft(10).bottom().row();
 		loadTable.add(bar = new ProgressBar(0,100,1,false,GUIHelper.getProgressBarStyle(Color.DARK_GRAY,Color.WHITE,10))).fillX().center().bottom().pad(10).padBottom(50).height(10).colspan(2).row();
 
